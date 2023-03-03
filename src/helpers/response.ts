@@ -1,0 +1,2 @@
+export const generateWrongResponse = (message: string) => {return {status: "success", body: null, message}}
+export const generateSuccessResponse = (body: any, message: string | null = null) => {return {status: "success", body, message}}
