@@ -56,10 +56,13 @@ export class UserService {
     try {
       const indexes = {
         start: page === 1? 0: (page -1) * 25,
-        end: page * 25
+        end: 25
       }
       // const users = await pool.query(`SELECT id, username FROM users OFFSET ${indexes.start} LIMIT ${indexes.end}`)
-      const users = await this.userRepository.find()
+      const users = await this.userRepository.find({
+        skip: indexes.start,
+        take: indexes.end
+      })
       if(!users) throw "" // usersControllerAnswers.notFoundUsers
       return generateSuccessResponse(users)
     } catch (err) {
@@ -70,11 +73,15 @@ export class UserService {
     try {
       const indexes = {
         start: page === 1? 0: (page - 1) * 25,
-        end: page * 25
+        end: 25
       }
       //const users = await pool.query(`SELECT username, id FROM users WHERE LOWER(username) LIKE LOWER($1) OFFSET ${indexes.start} LIMIT ${indexes.end}`, 
       //[`%${search}%`])
-      const users = await this.userRepository.findBy({username: `%${search}%`})
+      const users = await this.userRepository.find({
+        where: {username: `%${search}%`},
+        skip: indexes.start,
+        take: indexes.end
+      })
       if(!users) throw "" // usersControllerAnswers.notFoundUsers
       return generateSuccessResponse(users)
     } catch (err) {
@@ -127,11 +134,15 @@ export class UserService {
     try {
       const indexes = {
         start: page === 1 ? 0 : (page - 1) * 25,
-        end: page * 25
+        end: 25
       }
       // const blockedUsers = await pool.query(`SELECT * FROM blocked_users WHERE user_id= $1 OFFSET ${indexes.start} LIMIT ${indexes.end}`, 
       // [userId])
-      const blockedUsers = await this.blockUserRepository.findBy({id: userId})
+      const blockedUsers = await this.blockUserRepository.find({
+        where: {id: userId},
+        skip: indexes.start,
+        take: indexes.end
+      })
       if(!blockedUsers) throw "" // usersControllerAnswers.notFoundBlockedUsers
       return generateSuccessResponse(blockedUsers)
     } catch (err) {
@@ -169,11 +180,15 @@ export class UserService {
     try {
       const indexes = {
         start: page === 1? 0 : (page - 1) * 25,
-        end: page * 25
+        end: 25
       }
       // const subscriptions = await pool.query(`SELECT * FROM subscribers WHERE user_id = $1 OFFSET ${indexes.start} LIMIT ${indexes.end}`, 
       // [userId])
-      const subscriptions = await this.subscriberRepository.findBy({subscriber_user_id: userId})
+      const subscriptions = await this.subscriberRepository.find({
+        where: {subscriber_user_id: userId},
+        skip: indexes.start,
+        take: indexes.end
+      })
       // if(!subscriptions.rowCount) throw usersControllerAnswers.notFoundSubscriptions 
       return generateSuccessResponse(subscriptions)
     } catch (err) {
@@ -184,9 +199,13 @@ export class UserService {
     try {
       const indexes = {
         start: page === 1? 0 : (page - 1) * 25,
-        end: page * 25
+        end: 25
       }
-      const subscribers = await this.subscriberRepository.findBy({user_id: userId})
+      const subscribers = await this.subscriberRepository.find({
+        where: {user_id: userId},
+        skip: indexes.start,
+        take: indexes.end
+      })
       return generateSuccessResponse(subscribers)
     } catch (err) {
       return generateWrongResponse(`${err}`)

@@ -33,7 +33,7 @@ export class ChatService {
     try {
       const indexes = {
         start: page === 1? 0 : (page - 1) * 25,
-        end: page * 25
+        end: 25
       }
       const chat = await this.chatRepository.findOneBy({id: chatId})
       if(!chat) throw "" // chatsControllerAnswers.notFoundChat
@@ -52,7 +52,7 @@ export class ChatService {
     try {
       const indexes = {
         start: page === 1? 0 : (page - 1) * 25,
-        end: page * 25
+        end: 25
       }
       // const chats = await pool.query(
       //   `SELECT * FROM chats WHERE user1_id = $1 OR user2_id = $1 OFFSET ${indexes.start} LIMIT ${indexes.end}`, 
@@ -88,43 +88,38 @@ export class ChatService {
   }
   async editMessageByMessageId (userId: number, messageId: number, content: string) {
     try {
-      const message = await pool.query("SELECT * FROM messages WHERE id = $1", [messageId])
-      if(!message.rowCount) throw chatsControllerAnswers.notFoundMessage
-      const chat = await pool.query("SELECT * FROM chats WHERE id = $1", [message.rows[0].chat_id])
-      if(!chat.rowCount) throw chatsControllerAnswers.notFoundChat
+      //const message = await pool.query("SELECT * FROM messages WHERE id = $1", [messageId])
+      const message = await this.messageRepository.findOneBy({id: messageId}) 
+      if(!message) throw "" // chatsControllerAnswers.notFoundMessage
+      const chat = await this.chatRepository.findOneBy({id: message.chat_id}) // pool.query("SELECT * FROM chats WHERE id = $1", [message.rows[0].chat_id])
+      if(!chat) throw "" // chatsControllerAnswers.notFoundChat
       if(
-        (chat.rows[0].user1_id === userId && chat.rows[0].is_first_user_sender)
+        (chat.user1_id === userId && message.is_first_user_sender)
         || 
-        (chat.rows[0].user2_id !== userId && !chat.rows[0].is_first_user_sender)
-        ) throw chatsControllerAnswers.notYourMessage
-      await pool.query("UPDATE messages SET content = $1, edited = true WHERE id = $2", 
-      [content, userId])
-      res.send(generateSuccessResponse(messageId))
+        (chat.user2_id !== userId && message.is_first_user_sender)
+        ) throw "" // chatsControllerAnswers.notYourMessage
+      // await pool.query("UPDATE messages SET content = $1, edited = true WHERE id = $2")
+      await this.messageRepository.update({id: messageId}, {content, edited: true})
+      return generateSuccessResponse(messageId)
     } catch (err) {
-      res.send(generateWrongResponse(`${err}`))
+      return generateWrongResponse(`${err}`)
     }
   }
-  static async deleteMessageByMessageId (req: Request<{messageId: string}>, res: Response<IResponse>) {
+  async deleteMessageByMessageId (userId: number, messageId: number,) {
     try {
-      if(!req.userId) throw forAllControllerAnswers.auth
-      const {userId} = req
-      const {messageId} = req.params
-      const message = await pool.query("SELECT chat_id, id FROM messages WHERE id = $1",
-      [messageId])
-      if(!message.rowCount) throw chatsControllerAnswers.notFoundMessage
-      const chat = await pool.query("SELECT user1_id, user2_id FROM chats WHERE id = $1", 
-      [message.rows[0].chat_id])
-      if(!chat.rowCount) throw chatsControllerAnswers.notFoundChat
+      const message = await this.messageRepository.findOneBy({id: messageId})
+      if(!message) throw "" // chatsControllerAnswers.notFoundMessage
+      const chat = await this.chatRepository.findOneBy({id: message.chat_id})
+      if(!chat) throw "" // chatsControllerAnswers.notFoundChat
       if(
-        (chat.rows[0].user1_id === userId && chat.rows[0].is_first_user_sender)
+        (chat.user1_id === userId && message.is_first_user_sender)
         || 
-        (chat.rows[0].user2_id !== userId && !chat.rows[0].is_first_user_sender)
-        ) throw chatsControllerAnswers.notYourMessage
-      await pool.query("DELETE FROM messages WHERE id = $1", 
-      [messageId])
-      res.send(generateSuccessResponse(messageId))
+        (chat.user2_id !== userId && message.is_first_user_sender)
+        ) throw "" // chatsControllerAnswers.notYourMessage
+      await this.messageRepository.delete({id: messageId})
+      return generateSuccessResponse(messageId)
     } catch (err) {
-      res.send(generateWrongResponse(`${err}`))
+      return generateWrongResponse(`${err}`)
     }
   }
 }

@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from "typeorm";
 import { User } from "../user/user.entity";
+import { Post } from "../post/post.entity";
 
 @Entity("post_comments")
 export class PostComment {
@@ -14,6 +15,9 @@ export class PostComment {
 
   @Column({name: "is_has_replays", type: "boolean", default: false})
   is_has_replays: boolean
+
+  @ManyToOne(type => Post, post => post.id)
+  post_id: number
 
   @ManyToOne(type => User, user => user.id)
   user_id: number

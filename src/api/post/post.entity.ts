@@ -15,9 +15,15 @@ export class Post {
   @Column({name: "views", type: "int"})
   views: number
 
+  // @Column({name: "likes", type: "number", default: 0})
+  // likes: number
+
+  // @Column({name: "dislikes", type: "number", default: 0})
+  // dislikes: number
+
   @Column({name: "creation_date", type: "date", default: new Date()})
   creation_date: number
-  
+
   @Column({name: "user_id", type: "int"})
   user_id: number
 }
