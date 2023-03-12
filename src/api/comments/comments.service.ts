@@ -74,9 +74,9 @@ export class CommentService {
       } else {
         const newPostCommentReaction = this.postCommentReactionRepository.create({user_id: userId, comment_id: commentId, is_positive: isPositive})
         await this.postCommentReactionRepository.save(newPostCommentReaction)
-        isPositive?
-          await pool.query("UPDATE post_comments SET likes = likes + 1 WHERE id = $1", [commentId]):
-          await pool.query("UPDATE post_comments SET dislikes = dislikes - 1 WHERE id = $1", [commentId])
+        // isPositive?
+        //   await pool.query("UPDATE post_comments SET likes = likes + 1 WHERE id = $1", [commentId]):
+        //   await pool.query("UPDATE post_comments SET dislikes = dislikes - 1 WHERE id = $1", [commentId])
       }
       return generateSuccessResponse(null)
     } catch (err) {

@@ -76,24 +76,30 @@ export class PostService {
       return generateWrongResponse(`${err}`)
     }
   }
-  static async getById (postId: number) {
-    // try {
+  async getById (postId: number) {
+    try {
       // const post = await pool.query(`
       // SELECT *, (SELECT COUNT(*) FROM post_reactions WHERE post_id = $1 AND isPositive = true) AS likes,
       // (SELECT COUNT(*) FROM post_reactions WHERE post_id = $1 AND isPositive = false) AS dislikes
       // FROM posts WHERE id = $1
       // `,
       // [postId])
-    //   if(!post.rowCount) throw "" // postsControllerAnswers.notFoundOnePost
-    //   post.rows[0].views++
-    //   post.rows[0].likes = +post.rows[0].likes
-    //   post.rows[0].dislikes = +post.rows[0].dislikes
-    //   await pool.query("UPDATE posts SET views = $1 WHERE id = $2",
-    //   [post.rows[0].views, postId])
-    //   res.send(generateSuccessResponse(post.rows[0]))
-    // } catch (err) {
-    //   res.send(generateWrongResponse(`${err}`))
-    // }
+      const post = await this.postRepository.findOneBy({id: postId})
+      const reactions = await this.postReactionRepository.findBy({post_id: postId})
+
+      if(!post) throw "" // postsControllerAnswers.notFoundOnePost
+      let likes = 0
+      let dislikes = 0
+      reactions.forEach((reaction => {
+        if(reaction.is_positive) { 
+          likes++
+        }else dislikes++
+      }))
+      await this.postRepository.increment({id: postId}, "views", 1)
+      return generateSuccessResponse({...post, likes, dislikes})
+    } catch (err) {
+      return generateWrongResponse(`${err}`)
+    }
   }
   async getAllByUserIdAndPage (userId: number, page: number) {
     try {
